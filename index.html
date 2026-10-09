@@ -1,0 +1,1640 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>O&G Perioperative Assessment</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', sans-serif; background-color: #f8fafc; }
+        /* Custom scrollbar for textareas */
+        textarea::-webkit-scrollbar, div::-webkit-scrollbar { width: 8px; }
+        textarea::-webkit-scrollbar-track, div::-webkit-scrollbar-track { background: #f1f1f1; border-radius: 4px; }
+        textarea::-webkit-scrollbar-thumb, div::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+        textarea::-webkit-scrollbar-thumb:hover, div::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+        /* Hide number input spinners */
+        input[type="number"]::-webkit-inner-spin-button, 
+        input[type="number"]::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
+        input[type="number"] { -moz-appearance: textfield; }
+        
+        .section-header {
+            background: linear-gradient(90deg, #1e3a8a 0%, #3b82f6 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+    </style>
+</head>
+<body class="text-slate-800 antialiased bg-slate-50 min-h-screen">
+
+    <!-- NAVIGATION BAR -->
+    <nav class="bg-white border-b border-slate-200 shadow-sm sticky top-0 z-40">
+        <div class="max-w-7xl mx-auto px-4 md:px-8 flex justify-between items-center h-16">
+            <div class="flex items-center space-x-3">
+                <span class="bg-blue-600 text-white p-2 rounded-lg"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg></span>
+                <span class="font-bold text-lg tracking-tight text-slate-800">ERAS <span class="text-blue-600">O&G</span></span>
+            </div>
+            <div class="flex items-center space-x-2">
+                <button onclick="toggleFullscreen()" class="p-2 text-slate-500 hover:text-blue-600 transition" title="Toggle Fullscreen">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4"></path></svg>
+                </button>
+                <div class="flex space-x-2 bg-slate-100 p-1 rounded-xl border border-slate-200">
+                    <button onclick="switchView('clerking')" id="navClerking" class="px-4 py-1.5 text-sm font-bold rounded-lg bg-white shadow-sm text-blue-700 transition">Clerking Form</button>
+                    <button onclick="switchView('dashboard')" id="navDashboard" class="px-4 py-1.5 text-sm font-bold rounded-lg text-slate-500 hover:text-slate-800 transition">Dashboard</button>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- MAIN CLERKING VIEW WRAPPER -->
+    <div id="clerkingView" class="max-w-7xl mx-auto p-4 md:p-8 transition-opacity duration-300">
+        <header class="mb-8 text-center md:text-left border-b border-slate-200 pb-4 relative">
+            <h1 class="text-3xl md:text-4xl font-extrabold text-slate-900 tracking-tight">O&G Pre-Op Assessment</h1>
+            <p class="text-slate-500 mt-2 text-sm md:text-base font-medium">Evidence-Based ERAS Clinical Clerking & Decision Support Tool</p>
+            <div class="mt-3 inline-block bg-indigo-100 text-indigo-800 text-xs font-bold px-3 py-1.5 rounded-full border border-indigo-200 shadow-sm tracking-wide">
+                🚀 PROTOTYPE BY DR FARAAIN HSA JB
+            </div>
+        </header>
+
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+            
+            <!-- LEFT COLUMN: Input Form -->
+            <div class="lg:col-span-7 space-y-6 h-[85vh] overflow-y-auto pr-4 pb-10">
+                <form id="assessmentForm" class="space-y-6">
+                    
+                    <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 transition hover:shadow-md">
+                        <h2 class="text-lg font-bold text-slate-800 mb-4 flex items-center border-b border-slate-100 pb-2">
+                            <span class="bg-blue-100 text-blue-600 p-1.5 rounded-lg mr-2">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path></svg>
+                            </span>
+                            Patient Demographics
+                        </h2>
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1">Patient Name</label>
+                                <input type="text" id="patientName" class="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:bg-white outline-none transition" placeholder="Full Name" required>
+                            </div>
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1">IC / Passport No.</label>
+                                <input type="text" id="patientIc" oninput="calculateAgeFromIC()" class="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:bg-white outline-none transition" placeholder="YYMMDD-XX-XXXX" required>
+                            </div>
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1">MRN</label>
+                                <input type="text" id="patientMrn" class="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:bg-white outline-none transition" placeholder="Medical Record No." required>
+                            </div>
+                        </div>
+                        <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1">Age</label>
+                                <input type="number" id="patientAge" class="w-full p-2.5 bg-slate-100 border border-slate-200 rounded-lg text-slate-600 outline-none transition" placeholder="Auto/Manual" required>
+                            </div>
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1">Weight (kg)</label>
+                                <input type="number" step="0.1" id="patientWeight" oninput="calculateBmi()" class="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:bg-white outline-none transition" placeholder="kg" required>
+                            </div>
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1">Height (cm)</label>
+                                <input type="number" step="0.1" id="patientHeight" oninput="calculateBmi()" class="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:bg-white outline-none transition" placeholder="cm" required>
+                            </div>
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1">BMI</label>
+                                <input type="text" id="patientBmi" class="w-full p-2.5 border border-slate-200 rounded-lg bg-slate-100 text-slate-700 outline-none cursor-not-allowed font-bold text-center" placeholder="Auto-calc" readonly>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 transition hover:shadow-md">
+                        <h2 class="text-lg font-bold text-slate-800 mb-4 flex items-center border-b border-slate-100 pb-2">
+                            <span class="bg-indigo-100 text-indigo-600 p-1.5 rounded-lg mr-2">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"></path></svg>
+                            </span>
+                            Surgical & Clinical Profile
+                        </h2>
+                        
+                        <!-- Specialty Toggle -->
+                        <div class="mb-5 flex space-x-3">
+                            <label class="cursor-pointer flex-1">
+                                <input type="radio" name="specialty" value="gynecology" class="peer sr-only" checked onchange="toggleSpecialty()">
+                                <div class="p-3 text-center border border-slate-200 rounded-xl peer-checked:bg-rose-50 peer-checked:border-rose-500 peer-checked:text-rose-700 font-bold transition text-sm shadow-sm">🌸 Gynecology</div>
+                            </label>
+                            <label class="cursor-pointer flex-1">
+                                <input type="radio" name="specialty" value="obstetrics" class="peer sr-only" onchange="toggleSpecialty()">
+                                <div class="p-3 text-center border border-slate-200 rounded-xl peer-checked:bg-indigo-50 peer-checked:border-indigo-500 peer-checked:text-indigo-700 font-bold transition text-sm shadow-sm">🤰 Obstetrics</div>
+                            </label>
+                        </div>
+
+                        <!-- Obstetrics Specific Fields (Hidden by default) -->
+                        <div id="obsHistoryBlock" class="hidden mb-5 bg-indigo-50/40 p-5 rounded-xl border border-indigo-100 shadow-inner">
+                            <label class="block text-xs font-bold text-indigo-900 uppercase tracking-wider mb-3">Obstetric History</label>
+                            <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
+                                <div>
+                                    <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1">Gravida (G)</label>
+                                    <input type="number" id="obsGravida" class="w-full p-2.5 bg-white border border-slate-200 rounded-lg outline-none focus:ring-2 focus:ring-indigo-400 text-sm font-medium">
+                                </div>
+                                <div>
+                                    <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1">Para (P)</label>
+                                    <input type="number" id="obsPara" class="w-full p-2.5 bg-white border border-slate-200 rounded-lg outline-none focus:ring-2 focus:ring-indigo-400 text-sm font-medium">
+                                </div>
+                                <div>
+                                    <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1">Abortion (A)</label>
+                                    <input type="number" id="obsAbortion" class="w-full p-2.5 bg-white border border-slate-200 rounded-lg outline-none focus:ring-2 focus:ring-indigo-400 text-sm font-medium">
+                                </div>
+                                <div>
+                                    <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1">Ectopic (E)</label>
+                                    <input type="number" id="obsEctopic" class="w-full p-2.5 bg-white border border-slate-200 rounded-lg outline-none focus:ring-2 focus:ring-indigo-400 text-sm font-medium">
+                                </div>
+                            </div>
+                            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-5">
+                                <div>
+                                    <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1">LMP (Last Menstrual Period)</label>
+                                    <input type="date" id="obsLmp" onchange="calculatePregnancyDates()" class="w-full p-2.5 bg-white border border-slate-200 rounded-lg outline-none focus:ring-2 focus:ring-indigo-400 text-sm font-medium">
+                                </div>
+                                <div>
+                                    <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1">EDD (Auto-Calc)</label>
+                                    <input type="date" id="obsEdd" class="w-full p-2.5 bg-slate-100 border border-slate-200 rounded-lg outline-none text-sm text-slate-600 font-bold cursor-not-allowed" readonly>
+                                </div>
+                                <div>
+                                    <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1">Gestational Age (POA)</label>
+                                    <input type="text" id="obsPoa" class="w-full p-2.5 bg-indigo-100 border border-indigo-200 rounded-lg outline-none text-sm font-extrabold text-indigo-800 cursor-not-allowed" placeholder="Weeks + Days" readonly>
+                                </div>
+                            </div>
+                            
+                            <label class="block text-[10px] font-bold text-indigo-900 uppercase tracking-wider mb-2">Antenatal Risk Factors</label>
+                            <div class="grid grid-cols-2 md:grid-cols-3 gap-3 mb-3">
+                                <label class="flex items-center space-x-2 text-xs font-medium text-slate-700 cursor-pointer"><input type="checkbox" id="riskGdm" class="w-4 h-4 rounded text-indigo-600 focus:ring-indigo-500 border-slate-300"> <span>GDM</span></label>
+                                <label class="flex items-center space-x-2 text-xs font-medium text-slate-700 cursor-pointer"><input type="checkbox" id="riskPih" class="w-4 h-4 rounded text-indigo-600 focus:ring-indigo-500 border-slate-300"> <span>PIH / Pre-eclampsia</span></label>
+                                <label class="flex items-center space-x-2 text-xs font-medium text-slate-700 cursor-pointer"><input type="checkbox" id="riskPrevia" class="w-4 h-4 rounded text-indigo-600 focus:ring-indigo-500 border-slate-300"> <span>Placenta Previa</span></label>
+                                <label class="flex items-center space-x-2 text-xs font-medium text-slate-700 cursor-pointer"><input type="checkbox" id="riskMultiple" class="w-4 h-4 rounded text-indigo-600 focus:ring-indigo-500 border-slate-300"> <span>Multiple Gestation</span></label>
+                                <label class="flex items-center space-x-2 text-xs font-medium text-slate-700 cursor-pointer"><input type="checkbox" id="riskScar" class="w-4 h-4 rounded text-indigo-600 focus:ring-indigo-500 border-slate-300"> <span>Previous Uterine Scar</span></label>
+                            </div>
+                            <input type="text" id="riskOthers" class="w-full p-2.5 bg-white border border-slate-200 rounded-lg outline-none focus:ring-2 focus:ring-indigo-400 text-xs font-medium" placeholder="Other risks (e.g., Anemia, Asthma, Obesity)...">
+                        </div>
+
+                        <!-- Gynecology Dropdowns -->
+                        <div id="gynaeDropdowns" class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1">Gynae Active Issues</label>
+                                <select id="gynaeIssues" class="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-lg focus:ring-2 focus:ring-rose-400 focus:bg-white outline-none transition text-sm font-medium text-slate-700">
+                                    <option value="">-- Select Issue --</option>
+                                    <option value="Uterine Leiomyomas (Fibroids)">Uterine Leiomyomas (Fibroids)</option>
+                                    <option value="Benign Ovarian Cyst/Neoplasm">Benign Ovarian Cyst/Neoplasm</option>
+                                    <option value="Abnormal Uterine Bleeding (AUB)">Abnormal Uterine Bleeding (AUB)</option>
+                                    <option value="Endometriosis / Adenomyosis">Endometriosis / Adenomyosis</option>
+                                    <option value="Pelvic Organ Prolapse (POP)">Pelvic Organ Prolapse (POP)</option>
+                                    <option value="Ectopic Pregnancy">Ectopic Pregnancy</option>
+                                    <option value="Cervical Dysplasia (CIN)">Cervical Dysplasia (CIN)</option>
+                                    <option value="Suspected Gynaecological Malignancy">Suspected Gynaecological Malignancy</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1">Planned Gynae Surgery</label>
+                                <select id="gynaeSurgery" class="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-lg focus:ring-2 focus:ring-rose-400 focus:bg-white outline-none transition text-sm font-medium text-slate-700">
+                                    <option value="">-- Select Procedure --</option>
+                                    <optgroup label="Minor / Day Case">
+                                        <option value="Minor - Diagnostic Laparoscopy">Diagnostic Laparoscopy</option>
+                                        <option value="Minor - Cone Biopsy / LLETZ">Cone Biopsy / LLETZ</option>
+                                        <option value="Minor - Hysteroscopy / D&C">Hysteroscopy / D&C</option>
+                                    </optgroup>
+                                    <optgroup label="Major / Endoscopic">
+                                        <option value="Major - Laparoscopic Cystectomy">Laparoscopic Cystectomy</option>
+                                        <option value="Major - Laparoscopic Salpingectomy">Laparoscopic Salpingectomy</option>
+                                        <option value="Major - Laparoscopic Salpingo-oophorectomy">Laparoscopic Salpingo-oophorectomy</option>
+                                        <option value="Major - Laparoscopic Myomectomy">Laparoscopic Myomectomy</option>
+                                        <option value="Major - Total Laparoscopic Hysterectomy (TLH)">Total Laparoscopic Hysterectomy (TLH)</option>
+                                    </optgroup>
+                                    <optgroup label="Major / Open">
+                                        <option value="Major - Laparotomy Cystectomy">Laparotomy Cystectomy</option>
+                                        <option value="Major - Laparotomy Myomectomy">Laparotomy Myomectomy</option>
+                                        <option value="Major - TABHSO (Benign)">TABHSO (Benign)</option>
+                                        <option value="Major - Complex Gynae Oncology">Complex Gynae Oncology Staging</option>
+                                        <option value="Major - Pelvic Exenteration / HIPEC">Pelvic Exenteration / HIPEC</option>
+                                    </optgroup>
+                                </select>
+                            </div>
+                        </div>
+
+                        <!-- Obstetrics Dropdowns -->
+                        <div id="obsDropdowns" class="hidden grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                            <div class="flex flex-col space-y-2">
+                                <div>
+                                    <label class="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1">Obstetric Active Issues</label>
+                                    <select id="obsIssues" class="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-lg focus:ring-2 focus:ring-indigo-400 focus:bg-white outline-none transition text-sm font-medium text-slate-700">
+                                        <option value="">-- Select Issue --</option>
+                                        <option value="Fetal Distress / Compromise">Fetal Distress / Compromise</option>
+                                        <option value="Prolonged / Obstructed Labour">Prolonged / Obstructed Labour</option>
+                                        <option value="Severe Pre-eclampsia / Eclampsia">Severe Pre-eclampsia / Eclampsia</option>
+                                        <option value="Placenta Previa / Accreta Spectrum">Placenta Previa / Accreta Spectrum</option>
+                                        <option value="Placental Abruption">Placental Abruption</option>
+                                        <option value="Previous Scar in Labour">Previous Scar in Labour</option>
+                                        <option value="Refused TOLAC / Maternal Request">Refused TOLAC / Maternal Request</option>
+                                        <option value="History of OASIS">History of OASIS</option>
+                                        <option value="Subfertility / Precious Pregnancy">Subfertility / Precious Pregnancy</option>
+                                        <option value="Cervical Incompetence">Cervical Incompetence</option>
+                                        <option value="Retained Placenta / PPH">Retained Placenta / PPH</option>
+                                        <option value="Other">Other (Specify below)</option>
+                                    </select>
+                                </div>
+                                <input type="text" id="obsIssuesOther" class="w-full p-2.5 bg-white border border-slate-200 rounded-lg outline-none focus:ring-2 focus:ring-indigo-400 text-xs font-medium" placeholder="Specify other issues/indications here...">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1">Planned Obstetric Surgery</label>
+                                <select id="obsSurgery" class="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-lg focus:ring-2 focus:ring-indigo-400 focus:bg-white outline-none transition text-sm font-medium text-slate-700">
+                                    <option value="">-- Select Procedure --</option>
+                                    <optgroup label="Major Obstetric Surgery">
+                                        <option value="Major - Elective LSCS">Elective LSCS</option>
+                                        <option value="Major - Emergency LSCS">Emergency LSCS</option>
+                                        <option value="Major - Peripartum Hysterectomy">Peripartum Hysterectomy</option>
+                                    </optgroup>
+                                    <optgroup label="Minor / Procedural">
+                                        <option value="Minor - Cervical Cerclage">Cervical Cerclage (MacDonald/Shirodkar)</option>
+                                        <option value="Minor - ERPOC">Evacuation of Retained Products (ERPOC)</option>
+                                        <option value="Minor - Postpartum BTL">Postpartum Bilateral Tubal Ligation (BTL)</option>
+                                        <option value="Minor - Perineal Tear Repair (3rd/4th)">Perineal Tear Repair (3rd/4th Degree)</option>
+                                        <option value="Minor - Manual Removal of Placenta">Manual Removal of Placenta (MROP)</option>
+                                    </optgroup>
+                                </select>
+                            </div>
+                        </div>
+
+                        <!-- Frailty -->
+                        <div class="mb-5">
+                            <label class="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2">Clinical Frailty Scale</label>
+                            <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
+                                <label class="border border-slate-200 rounded-xl p-3 flex flex-col items-center cursor-pointer hover:bg-indigo-50 transition relative">
+                                    <input type="radio" name="frailScale" value="1" class="peer absolute opacity-0" checked>
+                                    <div class="peer-checked:ring-2 peer-checked:ring-indigo-500 peer-checked:bg-indigo-50 rounded-xl absolute inset-0 transition"></div>
+                                    <span class="text-3xl mb-1 relative z-10">🏃‍♀️</span>
+                                    <span class="text-xs text-center font-bold text-slate-700 relative z-10">1. Very Fit</span>
+                                </label>
+                                <label class="border border-slate-200 rounded-xl p-3 flex flex-col items-center cursor-pointer hover:bg-indigo-50 transition relative">
+                                    <input type="radio" name="frailScale" value="2" class="peer absolute opacity-0">
+                                    <div class="peer-checked:ring-2 peer-checked:ring-indigo-500 peer-checked:bg-indigo-50 rounded-xl absolute inset-0 transition"></div>
+                                    <span class="text-3xl mb-1 relative z-10">🚶‍♀️</span>
+                                    <span class="text-xs text-center font-bold text-slate-700 relative z-10">2-3. Well</span>
+                                </label>
+                                <label class="border border-slate-200 rounded-xl p-3 flex flex-col items-center cursor-pointer hover:bg-indigo-50 transition relative">
+                                    <input type="radio" name="frailScale" value="4" class="peer absolute opacity-0">
+                                    <div class="peer-checked:ring-2 peer-checked:ring-indigo-500 peer-checked:bg-indigo-50 rounded-xl absolute inset-0 transition"></div>
+                                    <span class="text-3xl mb-1 relative z-10">🦯</span>
+                                    <span class="text-xs text-center font-bold text-slate-700 relative z-10">4-5. Vulnerable</span>
+                                </label>
+                                <label class="border border-slate-200 rounded-xl p-3 flex flex-col items-center cursor-pointer hover:bg-indigo-50 transition relative">
+                                    <input type="radio" name="frailScale" value="6" class="peer absolute opacity-0">
+                                    <div class="peer-checked:ring-2 peer-checked:ring-indigo-500 peer-checked:bg-indigo-50 rounded-xl absolute inset-0 transition"></div>
+                                    <span class="text-3xl mb-1 relative z-10">🦽</span>
+                                    <span class="text-xs text-center font-bold text-slate-700 relative z-10">6+. Frail</span>
+                                </label>
+                            </div>
+                        </div>
+
+                        <!-- Comorbidities -->
+                        <div class="mb-2 block text-xs font-semibold text-slate-500 uppercase tracking-wider">Comorbidities & Risk Factors</div>
+                        <div class="grid grid-cols-2 md:grid-cols-3 gap-3 bg-slate-50 p-4 rounded-t-xl border border-slate-200 border-b-0">
+                            <label class="flex items-center space-x-2 text-sm text-slate-700 font-medium cursor-pointer"><input type="checkbox" id="cmDm" class="w-4 h-4 rounded text-indigo-600 focus:ring-indigo-500 border-slate-300"> <span>Diabetes Mellitus</span></label>
+                            <label class="flex items-center space-x-2 text-sm text-slate-700 font-medium cursor-pointer"><input type="checkbox" id="cmHtn" class="w-4 h-4 rounded text-indigo-600 focus:ring-indigo-500 border-slate-300"> <span>Hypertension</span></label>
+                            <label class="flex items-center space-x-2 text-sm text-slate-700 font-medium cursor-pointer"><input type="checkbox" id="cmCardiac" class="w-4 h-4 rounded text-indigo-600 focus:ring-indigo-500 border-slate-300"> <span>Cardiac Disease</span></label>
+                            <label class="flex items-center space-x-2 text-sm text-slate-700 font-medium cursor-pointer"><input type="checkbox" id="cmRenal" class="w-4 h-4 rounded text-indigo-600 focus:ring-indigo-500 border-slate-300"> <span>Renal Impairment</span></label>
+                            <label class="flex items-center space-x-2 text-sm text-slate-700 font-medium cursor-pointer"><input type="checkbox" id="cmVte" class="w-4 h-4 rounded text-indigo-600 focus:ring-indigo-500 border-slate-300"> <span>Prev VTE/Hypercoag</span></label>
+                            <label class="flex items-center space-x-2 text-sm text-slate-700 font-medium cursor-pointer"><input type="checkbox" id="cmOncology" class="w-4 h-4 rounded text-indigo-600 focus:ring-indigo-500 border-slate-300"> <span>Active Malignancy</span></label>
+                            <label class="flex items-center space-x-2 text-sm text-slate-700 font-medium cursor-pointer"><input type="checkbox" id="cmHyperT" class="w-4 h-4 rounded text-indigo-600 focus:ring-indigo-500 border-slate-300"> <span>Hyperthyroidism</span></label>
+                            <label class="flex items-center space-x-2 text-sm text-slate-700 font-medium cursor-pointer"><input type="checkbox" id="cmHypoT" class="w-4 h-4 rounded text-indigo-600 focus:ring-indigo-500 border-slate-300"> <span>Hypothyroidism</span></label>
+                        </div>
+                        <div class="bg-slate-50 p-3 rounded-b-xl border border-slate-200 border-t-0 flex items-center mb-4">
+                            <label class="text-sm font-bold text-slate-600 mr-3 whitespace-nowrap">Others:</label>
+                            <input type="text" id="cmOthers" class="w-full p-2 bg-white border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none text-sm transition" placeholder="Asthma, Thyroid, etc...">
+                        </div>
+
+                        <!-- Multidisciplinary Referrals -->
+                        <div class="mb-2 block text-xs font-semibold text-slate-500 uppercase tracking-wider">Multidisciplinary Referrals Required</div>
+                        <div class="grid grid-cols-2 md:grid-cols-3 gap-3 bg-indigo-50/50 p-4 rounded-xl border border-indigo-100">
+                             <label class="flex items-center space-x-2 text-sm text-indigo-900 font-medium cursor-pointer"><input type="checkbox" id="refCardio" class="w-4 h-4 rounded text-indigo-600 focus:ring-indigo-500"> <span>Cardiology</span></label>
+                             <label class="flex items-center space-x-2 text-sm text-indigo-900 font-medium cursor-pointer"><input type="checkbox" id="refEndo" class="w-4 h-4 rounded text-indigo-600 focus:ring-indigo-500"> <span>Endocrinology</span></label>
+                             <label class="flex items-center space-x-2 text-sm text-indigo-900 font-medium cursor-pointer"><input type="checkbox" id="refAnaes" class="w-4 h-4 rounded text-indigo-600 focus:ring-indigo-500"> <span>Anaesthesiology</span></label>
+                             <label class="flex items-center space-x-2 text-sm text-indigo-900 font-medium cursor-pointer"><input type="checkbox" id="refUro" class="w-4 h-4 rounded text-indigo-600 focus:ring-indigo-500"> <span>Urology</span></label>
+                             <label class="flex items-center space-x-2 text-sm text-indigo-900 font-medium cursor-pointer"><input type="checkbox" id="refColo" class="w-4 h-4 rounded text-indigo-600 focus:ring-indigo-500"> <span>Colorectal</span></label>
+                        </div>
+                    </div>
+
+                    <!-- Vitals & Blood Profile -->
+                    <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 transition hover:shadow-md">
+                        <h2 class="text-lg font-bold text-slate-800 mb-4 flex items-center border-b border-slate-100 pb-2">
+                            <span class="text-2xl mr-2">❤️</span>
+                            Vitals & Blood Profile
+                        </h2>
+                        <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4">
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1">BP Systolic</label>
+                                <input type="number" id="bpSys" oninput="checkRedFlag(this, 90, 160)" class="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-lg outline-none transition" placeholder="mmHg">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1">BP Diastolic</label>
+                                <input type="number" id="bpDia" oninput="checkRedFlag(this, 50, 100)" class="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-lg outline-none transition" placeholder="mmHg">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1">Heart Rate</label>
+                                <input type="number" id="hr" oninput="checkRedFlag(this, 50, 100)" class="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-lg outline-none transition" placeholder="bpm">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1">Hemoglobin (Hb)</label>
+                                <input type="number" step="0.1" id="hb" oninput="checkRedFlag(this, 10, 16)" class="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-lg outline-none transition" placeholder="g/dL">
+                            </div>
+                        </div>
+                        <div class="flex flex-wrap gap-4 pt-2">
+                            <label class="flex items-center space-x-2 text-sm text-slate-700 font-medium cursor-pointer"><input type="checkbox" id="sympAnemia" class="w-4 h-4 rounded text-rose-600 focus:ring-rose-500 border-slate-300"> <span>Symptomatic Anemia (Fatigue, SoB)</span></label>
+                            <label class="flex items-center space-x-2 text-sm text-slate-700 font-medium cursor-pointer"><input type="checkbox" id="sympBleeding" class="w-4 h-4 rounded text-rose-600 focus:ring-rose-500 border-slate-300"> <span>Active Bleeding / Heavy Menses</span></label>
+                        </div>
+                    </div>
+
+                    <!-- Metabolic & Endocrine Profile -->
+                    <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 transition hover:shadow-md">
+                        <h2 class="text-lg font-bold text-slate-800 mb-4 flex items-center border-b border-slate-100 pb-2">
+                            <span class="text-2xl mr-2">🧪</span>
+                            Metabolic & Endocrine Profile
+                        </h2>
+                        <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1">HbA1c (%)</label>
+                                <input type="number" step="0.1" id="hba1c" oninput="checkRedFlag(this, 4.0, 7.0)" class="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-lg outline-none transition" placeholder="%">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1">Fasting Glucose</label>
+                                <input type="text" id="glucose" class="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-lg outline-none transition" placeholder="mmol/L">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1">TSH</label>
+                                <input type="number" step="0.01" id="tsh" oninput="checkRedFlag(this, 0.4, 4.5)" class="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-lg outline-none transition" placeholder="mIU/L">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1">Free T4</label>
+                                <input type="number" step="0.1" id="freeT4" class="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-lg outline-none transition" placeholder="pmol/L">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Basic & Additional Laboratory Investigations -->
+                    <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 transition hover:shadow-md">
+                        <h2 class="text-lg font-bold text-slate-800 mb-4 flex items-center border-b border-slate-100 pb-2">
+                            <span class="text-2xl mr-2">🔬</span>
+                            Laboratory Investigations
+                        </h2>
+                        
+                        <!-- Separated FBC -->
+                        <div class="mb-4 bg-slate-50 p-3 rounded-xl border border-slate-100">
+                            <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-2">Full Blood Count (FBC)</label>
+                            <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
+                                <div>
+                                    <label class="block text-[10px] text-slate-400 font-semibold mb-1">WCC (x10^9/L)</label>
+                                    <input type="number" step="0.1" id="invWcc" class="w-full p-2 bg-white border border-slate-200 rounded-lg outline-none focus:ring-2 focus:ring-blue-400 text-sm">
+                                </div>
+                                <div>
+                                    <label class="block text-[10px] text-slate-400 font-semibold mb-1">Platelets (x10^9/L)</label>
+                                    <input type="number" step="1" id="invPlt" class="w-full p-2 bg-white border border-slate-200 rounded-lg outline-none focus:ring-2 focus:ring-blue-400 text-sm">
+                                </div>
+                                <div class="col-span-2 flex items-center pt-5">
+                                    <span class="text-[10px] text-slate-400 font-medium italic">*Hemoglobin (Hb) is recorded in Vitals section above.</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Separated Renal Profile -->
+                        <div class="mb-4 bg-slate-50 p-3 rounded-xl border border-slate-100">
+                            <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-2">Renal Profile (RP)</label>
+                            <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
+                                <div>
+                                    <label class="block text-[10px] text-slate-400 font-semibold mb-1">Urea (mmol/L)</label>
+                                    <input type="number" step="0.1" id="invUrea" class="w-full p-2 bg-white border border-slate-200 rounded-lg outline-none focus:ring-2 focus:ring-blue-400 text-sm">
+                                </div>
+                                <div>
+                                    <label class="block text-[10px] text-slate-400 font-semibold mb-1">Creatinine (µmol/L)</label>
+                                    <input type="number" step="1" id="invCr" class="w-full p-2 bg-white border border-slate-200 rounded-lg outline-none focus:ring-2 focus:ring-blue-400 text-sm">
+                                </div>
+                                <div>
+                                    <label class="block text-[10px] text-slate-400 font-semibold mb-1">Sodium Na+ (mmol/L)</label>
+                                    <input type="number" step="1" id="invNa" class="w-full p-2 bg-white border border-slate-200 rounded-lg outline-none focus:ring-2 focus:ring-blue-400 text-sm">
+                                </div>
+                                <div>
+                                    <label class="block text-[10px] text-slate-400 font-semibold mb-1">Potassium K+ (mmol/L)</label>
+                                    <input type="number" step="0.1" id="invK" class="w-full p-2 bg-white border border-slate-200 rounded-lg outline-none focus:ring-2 focus:ring-blue-400 text-sm">
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Separated Liver Function -->
+                        <div class="mb-4 bg-slate-50 p-3 rounded-xl border border-slate-100">
+                            <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-2">Liver Function Test (LFT)</label>
+                            <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
+                                <div>
+                                    <label class="block text-[10px] text-slate-400 font-semibold mb-1">Bilirubin (µmol/L)</label>
+                                    <input type="number" step="1" id="invBili" class="w-full p-2 bg-white border border-slate-200 rounded-lg outline-none focus:ring-2 focus:ring-blue-400 text-sm">
+                                </div>
+                                <div>
+                                    <label class="block text-[10px] text-slate-400 font-semibold mb-1">AST (U/L)</label>
+                                    <input type="number" step="1" id="invAst" class="w-full p-2 bg-white border border-slate-200 rounded-lg outline-none focus:ring-2 focus:ring-blue-400 text-sm">
+                                </div>
+                                <div>
+                                    <label class="block text-[10px] text-slate-400 font-semibold mb-1">ALT (U/L)</label>
+                                    <input type="number" step="1" id="invAlt" class="w-full p-2 bg-white border border-slate-200 rounded-lg outline-none focus:ring-2 focus:ring-blue-400 text-sm">
+                                </div>
+                                <div>
+                                    <label class="block text-[10px] text-slate-400 font-semibold mb-1">Albumin (g/L)</label>
+                                    <input type="number" step="1" id="invAlbumin" class="w-full p-2 bg-white border border-slate-200 rounded-lg outline-none focus:ring-2 focus:ring-blue-400 text-sm">
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Separated Coagulation -->
+                        <div class="mb-4 bg-slate-50 p-3 rounded-xl border border-slate-100">
+                            <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-2">Coagulation Profile</label>
+                            <div class="grid grid-cols-3 gap-3">
+                                <div>
+                                    <label class="block text-[10px] text-slate-400 font-semibold mb-1">PT (secs)</label>
+                                    <input type="number" step="0.1" id="invPt" class="w-full p-2 bg-white border border-slate-200 rounded-lg outline-none focus:ring-2 focus:ring-blue-400 text-sm">
+                                </div>
+                                <div>
+                                    <label class="block text-[10px] text-slate-400 font-semibold mb-1">APTT (secs)</label>
+                                    <input type="number" step="0.1" id="invAptt" class="w-full p-2 bg-white border border-slate-200 rounded-lg outline-none focus:ring-2 focus:ring-blue-400 text-sm">
+                                </div>
+                                <div>
+                                    <label class="block text-[10px] text-slate-400 font-semibold mb-1">INR</label>
+                                    <input type="number" step="0.1" id="invInr" class="w-full p-2 bg-white border border-slate-200 rounded-lg outline-none focus:ring-2 focus:ring-blue-400 text-sm">
+                                </div>
+                            </div>
+                        </div>
+
+                        <div>
+                            <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-2">Additional Investigations</label>
+                            <textarea id="invOthers" rows="2" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-lg outline-none focus:ring-2 focus:ring-blue-400 text-sm transition" placeholder="Tumor markers (e.g., CA-125), grouping & cross-matching, ultrasound/CT imaging findings..."></textarea>
+                        </div>
+                    </div>
+
+                    <!-- Investigations & Imaging Checklist -->
+                    <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 transition hover:shadow-md">
+                        <h2 class="text-lg font-bold text-slate-800 mb-4 flex items-center border-b border-slate-100 pb-2">
+                            <span class="text-2xl mr-2">🩻</span>
+                            Investigations & Imaging
+                        </h2>
+                        
+                        <!-- ECG -->
+                        <div class="mb-5 bg-slate-50 p-4 rounded-xl border border-slate-200">
+                            <label class="flex items-center space-x-2 text-sm font-bold text-slate-800 cursor-pointer mb-3 border-b border-slate-200 pb-2">
+                                <input type="checkbox" id="ecgDone" onchange="toggleFindings('ecg')" class="w-5 h-5 rounded text-teal-600 focus:ring-teal-500 border-slate-300"> 
+                                <span>12-Lead ECG Performed</span>
+                            </label>
+                            <div id="ecgOptions" class="grid grid-cols-2 md:grid-cols-3 gap-3 opacity-50 pointer-events-none transition-opacity">
+                                <label class="flex items-center space-x-2 text-xs cursor-pointer font-medium text-slate-700"><input type="checkbox" id="ecgNormal" class="w-4 h-4 rounded text-teal-500 border-slate-300"> <span>Normal Sinus Rhythm</span></label>
+                                <label class="flex items-center space-x-2 text-xs cursor-pointer font-bold text-rose-700"><input type="checkbox" id="ecgIschemia" class="w-4 h-4 rounded text-rose-500 border-rose-300"> <span>Ischemia / Infarct</span></label>
+                                <label class="flex items-center space-x-2 text-xs cursor-pointer font-bold text-rose-700"><input type="checkbox" id="ecgAf" class="w-4 h-4 rounded text-rose-500 border-rose-300"> <span>AF / Arrhythmia</span></label>
+                                <label class="flex items-center space-x-2 text-xs cursor-pointer font-bold text-orange-700"><input type="checkbox" id="ecgLvh" class="w-4 h-4 rounded text-orange-500 border-orange-300"> <span>LVH</span></label>
+                                <label class="flex items-center space-x-2 text-xs cursor-pointer font-bold text-orange-700"><input type="checkbox" id="ecgBbb" class="w-4 h-4 rounded text-orange-500 border-orange-300"> <span>Bundle Branch Block</span></label>
+                                <input type="text" id="ecgOthers" class="w-full p-1.5 border border-slate-300 rounded text-xs outline-none focus:border-teal-500 bg-white" placeholder="Other findings...">
+                            </div>
+                        </div>
+
+                        <!-- ECHO -->
+                        <div class="bg-slate-50 p-4 rounded-xl border border-slate-200">
+                            <label class="flex items-center space-x-2 text-sm font-bold text-slate-800 cursor-pointer mb-3 border-b border-slate-200 pb-2">
+                                <input type="checkbox" id="echoDone" onchange="toggleFindings('echo')" class="w-5 h-5 rounded text-teal-600 focus:ring-teal-500 border-slate-300"> 
+                                <span>Echocardiography (ECHO) Performed</span>
+                            </label>
+                            <div id="echoOptions" class="grid grid-cols-2 md:grid-cols-3 gap-3 opacity-50 pointer-events-none transition-opacity">
+                                <label class="flex items-center space-x-2 text-xs cursor-pointer font-medium text-slate-700"><input type="checkbox" id="echoNormal" class="w-4 h-4 rounded text-teal-500 border-slate-300"> <span>Normal LVEF &gt;50%</span></label>
+                                <label class="flex items-center space-x-2 text-xs cursor-pointer font-bold text-rose-700"><input type="checkbox" id="echoImpaired" class="w-4 h-4 rounded text-rose-500 border-rose-300"> <span>Impaired LVEF &lt;50%</span></label>
+                                <label class="flex items-center space-x-2 text-xs cursor-pointer font-bold text-rose-700"><input type="checkbox" id="echoValvular" class="w-4 h-4 rounded text-rose-500 border-rose-300"> <span>Mod/Sev Valvulopathy</span></label>
+                                <label class="flex items-center space-x-2 text-xs cursor-pointer font-bold text-orange-700"><input type="checkbox" id="echoPhtn" class="w-4 h-4 rounded text-orange-500 border-orange-300"> <span>Pulmonary HTN</span></label>
+                                <label class="flex items-center space-x-2 text-xs cursor-pointer font-bold text-orange-700"><input type="checkbox" id="echoDiastolic" class="w-4 h-4 rounded text-orange-500 border-orange-300"> <span>Diastolic Dysfunction</span></label>
+                                <input type="text" id="echoOthers" class="w-full p-1.5 border border-slate-300 rounded text-xs outline-none focus:border-teal-500 bg-white" placeholder="Other findings...">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Cardiovascular Risk Assessment -->
+                    <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 transition hover:shadow-md">
+                        <h2 class="text-lg font-bold text-slate-800 mb-4 flex items-center border-b border-slate-100 pb-2">
+                            <span class="bg-red-100 text-red-600 p-1.5 rounded-lg mr-2">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"></path></svg>
+                            </span>
+                            Cardiovascular Risk Assessment (ACC/AHA Guidelines)
+                        </h2>
+                        
+                        <!-- Step 1 -->
+                        <div class="mb-4 bg-red-50 p-4 rounded-xl border border-red-100">
+                            <label class="block text-xs font-bold text-red-800 uppercase tracking-wider mb-2">Step 1: Active Cardiac Conditions (Defer Elective Surgery)</label>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-2">
+                                <label class="flex items-center space-x-2 text-sm text-slate-700 cursor-pointer"><input type="checkbox" id="cardioUnstableAngina" class="w-4 h-4 text-red-600 focus:ring-red-500"> <span>Unstable Angina / ACS</span></label>
+                                <label class="flex items-center space-x-2 text-sm text-slate-700 cursor-pointer"><input type="checkbox" id="cardioDecompHF" class="w-4 h-4 text-red-600 focus:ring-red-500"> <span>Decompensated Heart Failure</span></label>
+                                <label class="flex items-center space-x-2 text-sm text-slate-700 cursor-pointer"><input type="checkbox" id="cardioArrhythmia" class="w-4 h-4 text-red-600 focus:ring-red-500"> <span>Significant Arrhythmias</span></label>
+                                <label class="flex items-center space-x-2 text-sm text-slate-700 cursor-pointer"><input type="checkbox" id="cardioSevereValve" class="w-4 h-4 text-red-600 focus:ring-red-500"> <span>Severe/Symptomatic Valvular Disease</span></label>
+                            </div>
+                        </div>
+
+                        <!-- Step 2 & 4 -->
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <!-- RCRI -->
+                            <div class="bg-slate-50 p-4 rounded-xl border border-slate-200">
+                                <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">Step 2: RCRI Parameters</label>
+                                <p class="text-[10px] text-slate-500 mb-2 leading-tight">*Surgical risk (Step 3) is auto-calculated based on planned surgery selection above.</p>
+                                <div class="space-y-2">
+                                    <label class="flex items-center space-x-2 text-sm text-slate-700 cursor-pointer"><input type="checkbox" id="rcriIHD" class="w-4 h-4 text-blue-600 focus:ring-blue-500"> <span>History of Ischemic Heart Disease</span></label>
+                                    <label class="flex items-center space-x-2 text-sm text-slate-700 cursor-pointer"><input type="checkbox" id="rcriCHF" class="w-4 h-4 text-blue-600 focus:ring-blue-500"> <span>History of Congestive Heart Failure</span></label>
+                                    <label class="flex items-center space-x-2 text-sm text-slate-700 cursor-pointer"><input type="checkbox" id="rcriCVD" class="w-4 h-4 text-blue-600 focus:ring-blue-500"> <span>History of Cerebrovascular Disease (Stroke/TIA)</span></label>
+                                    <label class="flex items-center space-x-2 text-sm text-slate-700 cursor-pointer"><input type="checkbox" id="rcriIDDM" class="w-4 h-4 text-blue-600 focus:ring-blue-500"> <span>Pre-op Insulin-Dependent DM</span></label>
+                                    <label class="flex items-center space-x-2 text-sm text-slate-700 cursor-pointer"><input type="checkbox" id="rcriRenal" class="w-4 h-4 text-blue-600 focus:ring-blue-500"> <span>Pre-op Creatinine > 2.0 mg/dL</span></label>
+                                </div>
+                            </div>
+                            
+                            <!-- METs & Modifiers -->
+                            <div class="flex flex-col space-y-4">
+                                <div class="bg-slate-50 p-4 rounded-xl border border-slate-200">
+                                    <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">Step 4: Functional Capacity</label>
+                                    <div class="space-y-3">
+                                        <label class="flex items-start space-x-2 text-sm text-slate-700 cursor-pointer">
+                                            <input type="radio" name="mets" value="good" class="w-4 h-4 mt-0.5 text-blue-600 focus:ring-blue-500" checked>
+                                            <span class="leading-tight">≥ 4 METs (Can climb 2 flights of stairs without chest pain/SOB)</span>
+                                        </label>
+                                        <label class="flex items-start space-x-2 text-sm text-red-700 font-bold cursor-pointer">
+                                            <input type="radio" name="mets" value="poor" class="w-4 h-4 mt-0.5 text-red-600 focus:ring-red-500">
+                                            <span class="leading-tight">< 4 METs (Poor capacity, High Risk)</span>
+                                        </label>
+                                    </div>
+                                </div>
+                                
+                                <div class="bg-orange-50 p-4 rounded-xl border border-orange-200">
+                                    <label class="block text-xs font-bold text-orange-900 uppercase tracking-wider mb-2">Red Flags (Modifiers)</label>
+                                    <div class="space-y-2">
+                                        <label class="flex items-center space-x-2 text-sm text-slate-700 cursor-pointer"><input type="checkbox" id="modPulmHTN" class="w-4 h-4 text-orange-600 focus:ring-orange-500"> <span>Severe Pulmonary Hypertension</span></label>
+                                        <label class="flex items-center space-x-2 text-sm text-slate-700 cursor-pointer"><input type="checkbox" id="modBiomarkers" class="w-4 h-4 text-orange-600 focus:ring-orange-500"> <span>Elevated Biomarkers (NT-proBNP/hs-Tn)</span></label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 transition hover:shadow-md">
+                        <h2 class="text-lg font-bold text-slate-800 mb-4 flex items-center border-b border-slate-100 pb-2">
+                            <span class="bg-emerald-100 text-emerald-600 p-1.5 rounded-lg mr-2">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"></path></svg>
+                            </span>
+                            Safe Surgery & ERAS Bundle
+                        </h2>
+                        
+                        <div class="space-y-3">
+                            <div class="p-3 bg-slate-50 border border-slate-200 rounded-xl transition">
+                                <div class="flex items-center justify-between mb-2 cursor-pointer" onclick="document.getElementById('chkCounsel').click()">
+                                    <div>
+                                        <span class="text-sm font-bold text-slate-700 flex items-center gap-2">🗣️ Pre-op Counseling & Expectations</span>
+                                        <span class="text-xs text-slate-500">Fasting, analgesia, early mobilization discussed.</span>
+                                    </div>
+                                    <input type="checkbox" id="chkCounsel" class="w-5 h-5 text-emerald-600 rounded focus:ring-emerald-500 border-slate-300">
+                                </div>
+                                <div class="pl-7 grid grid-cols-2 gap-2 mt-2 pt-2 border-t border-slate-200">
+                                    <label class="flex items-center space-x-2 text-xs cursor-pointer"><input type="checkbox" id="counselSpiro" class="w-3.5 h-3.5 rounded text-emerald-500"> <span>🫁 Spirometry</span></label>
+                                    <label class="flex items-center space-x-2 text-xs cursor-pointer"><input type="checkbox" id="counselIncSpiro" class="w-3.5 h-3.5 rounded text-emerald-500"> <span>🌬️ Incentive Spirometry</span></label>
+                                    <label class="flex items-center space-x-2 text-xs cursor-pointer"><input type="checkbox" id="counselDiet" class="w-3.5 h-3.5 rounded text-emerald-500"> <span>🥗 Refer Dietitian</span></label>
+                                    <label class="flex items-center space-x-2 text-xs cursor-pointer"><input type="checkbox" id="counselTed" class="w-3.5 h-3.5 rounded text-emerald-500"> <span>🧦 TED Stockings</span></label>
+                                </div>
+                            </div>
+
+                            <label class="flex items-center justify-between p-3 bg-slate-50 border border-slate-200 hover:bg-slate-100 rounded-xl cursor-pointer transition">
+                                <div>
+                                    <span class="text-sm font-bold text-slate-700 flex items-center gap-2">🚿 SSI Prevention Bundle</span>
+                                    <span class="text-xs text-slate-500">Chlorhexidine bath, hair clipping (if needed).</span>
+                                </div>
+                                <input type="checkbox" id="chkSkin" class="w-5 h-5 text-emerald-600 rounded focus:ring-emerald-500 border-slate-300">
+                            </label>
+                            
+                            <div class="h-px bg-slate-200 my-2"></div>
+                            
+                            <label class="flex items-center justify-between p-3 bg-emerald-50 border border-emerald-100 hover:bg-emerald-100 rounded-xl cursor-pointer transition">
+                                <div>
+                                    <span class="text-sm font-bold text-emerald-900 flex items-center gap-2">🎯 Surgical Site Marked</span>
+                                    <span class="text-xs text-emerald-700">Done by operating surgeon (if applicable).</span>
+                                </div>
+                                <input type="checkbox" id="chkMarking" class="w-5 h-5 text-emerald-600 rounded focus:ring-emerald-500 border-emerald-300">
+                            </label>
+                            <label class="flex items-center justify-between p-3 bg-emerald-50 border border-emerald-100 hover:bg-emerald-100 rounded-xl cursor-pointer transition">
+                                <div>
+                                    <span class="text-sm font-bold text-emerald-900 flex items-center gap-2">✍️ Consent Signed & Verified</span>
+                                    <span class="text-xs text-emerald-700">Patient identity (2 identifiers) and procedure confirmed.</span>
+                                </div>
+                                <input type="checkbox" id="chkConsent" class="w-5 h-5 text-emerald-600 rounded focus:ring-emerald-500 border-emerald-300">
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-3 mt-6">
+                        <button type="button" onclick="generateClerking()" class="col-span-1 md:col-span-2 py-4 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-extrabold rounded-2xl shadow-lg transition-all transform hover:-translate-y-1 text-base flex justify-center items-center group">
+                            <svg class="w-5 h-5 mr-2 group-hover:animate-pulse" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z"></path></svg>
+                            Generate ERAS Clinical Clerking
+                        </button>
+                        
+                        <button type="button" onclick="downloadTxt()" class="col-span-1 py-3 bg-slate-800 hover:bg-slate-900 text-white font-bold rounded-xl shadow transition-all text-sm flex justify-center items-center">
+                            <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+                            Download (.txt)
+                        </button>
+
+                        <button type="button" onclick="switchView('dashboard')" class="col-span-1 py-3 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl shadow transition-all text-sm flex justify-center items-center">
+                            <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path></svg>
+                            View Analytics Dashboard
+                        </button>
+                    </div>
+
+                </form>
+            </div>
+
+            <!-- RIGHT COLUMN: Output Preview -->
+            <div class="lg:col-span-5 relative">
+                <div class="sticky top-8 bg-white p-0 rounded-2xl shadow-xl border border-slate-200 overflow-hidden flex flex-col h-[85vh]">
+                    <div class="bg-slate-900 p-4 text-white flex justify-between items-center">
+                        <h2 class="font-bold text-lg flex items-center">
+                            <svg class="w-5 h-5 mr-2 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+                            AI Notes & Plan
+                        </h2>
+                        <button onclick="copyNotes()" class="bg-white/10 hover:bg-white/20 border border-white/20 text-white text-sm py-1.5 px-3 rounded-lg flex items-center transition font-medium">
+                            <svg class="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3"></path></svg>
+                            Copy
+                        </button>
+                    </div>
+                    <div class="p-3 bg-amber-50 border-b border-amber-200 flex items-start space-x-2">
+                        <svg class="w-5 h-5 text-amber-600 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                        <p class="text-xs text-amber-800 leading-tight font-medium">Grounded on FEBRASGO 2022 & ERAS Society 2019 Guidelines. Ready for EMR paste.</p>
+                    </div>
+                    
+                    <textarea id="outputNotes" class="flex-grow w-full p-5 text-sm text-slate-700 bg-slate-50 focus:outline-none resize-none font-mono leading-relaxed" readonly placeholder="Fill the form and click generate to see the clinical clerking and decision support strategy here..."></textarea>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- DASHBOARD VIEW -->
+    <div id="dashboardView" class="max-w-7xl mx-auto p-4 md:p-8 hidden transition-opacity duration-300">
+        <div class="flex justify-between items-center mb-8">
+            <div>
+                <h1 class="text-3xl font-extrabold text-slate-900 tracking-tight">Analytics Dashboard</h1>
+                <p class="text-slate-500 text-sm mt-1 font-medium">Data-driven insights for O&G Perioperative cases.</p>
+            </div>
+            <button onclick="startNewCase()" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2.5 px-5 rounded-xl shadow-md transition flex items-center">
+                <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
+                New Case Entry
+            </button>
+        </div>
+
+        <!-- Summary Cards -->
+        <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 mb-8">
+            <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200">
+                <p class="text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Total Cases</p>
+                <h3 class="text-3xl font-extrabold text-blue-600" id="dashTotalCases">0</h3>
+            </div>
+            <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200">
+                <p class="text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Obs vs Gynae</p>
+                <h3 class="text-2xl font-extrabold text-slate-800"><span id="dashObs" class="text-indigo-600">0</span> <span class="text-slate-300 text-lg font-medium">/</span> <span id="dashGynae" class="text-rose-500">0</span></h3>
+            </div>
+            <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200">
+                <p class="text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Average Age</p>
+                <h3 class="text-3xl font-extrabold text-slate-800" id="dashAvgAge">0</h3>
+            </div>
+            <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200">
+                <p class="text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">High CV Risk (RCRI ≥2)</p>
+                <h3 class="text-3xl font-extrabold text-red-600" id="dashHighRisk">0%</h3>
+            </div>
+            <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200">
+                <p class="text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Oncology/Malignancy</p>
+                <h3 class="text-3xl font-extrabold text-amber-500" id="dashOncology">0%</h3>
+            </div>
+            <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200">
+                <p class="text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Frail (CFS ≥ 4)</p>
+                <h3 class="text-3xl font-extrabold text-orange-500" id="dashFrail">0%</h3>
+            </div>
+        </div>
+
+        <!-- Charts -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+            <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
+                <h3 class="text-sm font-bold text-slate-700 mb-4 text-center">Case Distribution</h3>
+                <div class="relative h-56 w-full flex justify-center">
+                    <canvas id="specialtyChart"></canvas>
+                </div>
+            </div>
+            <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
+                <h3 class="text-sm font-bold text-slate-700 mb-4 text-center">Surgery Types</h3>
+                <div class="relative h-56 w-full flex justify-center">
+                    <canvas id="surgeryTypeChart"></canvas>
+                </div>
+            </div>
+            <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
+                <h3 class="text-sm font-bold text-slate-700 mb-4 text-center">Clinical Frailty Scale</h3>
+                <div class="relative h-56 w-full flex justify-center">
+                    <canvas id="frailtyChart"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- Case Table -->
+        <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+            <div class="px-6 py-4 border-b border-slate-100 bg-slate-50 flex justify-between items-center">
+                <h3 class="text-sm font-bold text-slate-700">Recent Registered Cases</h3>
+                <button onclick="clearAllData()" class="text-xs text-red-500 hover:text-red-700 font-bold transition">Clear All Data</button>
+            </div>
+            <div class="overflow-x-auto">
+                <table class="w-full text-left border-collapse">
+                    <thead>
+                        <tr>
+                            <th class="px-6 py-3 text-xs font-bold text-slate-500 uppercase border-b border-slate-200 bg-white">Date</th>
+                            <th class="px-6 py-3 text-xs font-bold text-slate-500 uppercase border-b border-slate-200 bg-white">Patient Name / IC</th>
+                            <th class="px-6 py-3 text-xs font-bold text-slate-500 uppercase border-b border-slate-200 bg-white">Age / BMI</th>
+                            <th class="px-6 py-3 text-xs font-bold text-slate-500 uppercase border-b border-slate-200 bg-white">Specialty</th>
+                            <th class="px-6 py-3 text-xs font-bold text-slate-500 uppercase border-b border-slate-200 bg-white">Surgery Planned</th>
+                            <th class="px-6 py-3 text-xs font-bold text-slate-500 uppercase border-b border-slate-200 bg-white">CV Risk</th>
+                        </tr>
+                    </thead>
+                    <tbody id="caseTableBody" class="text-sm">
+                        <!-- Populated by JS -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Notification -->
+    <div id="customModal" class="fixed inset-0 z-50 hidden bg-slate-900/40 backdrop-blur-sm flex items-center justify-center p-4 opacity-0 transition-opacity duration-300">
+        <div class="bg-white rounded-2xl shadow-2xl p-6 max-w-sm w-full transform scale-95 transition-transform duration-300" id="modalContent">
+            <div class="flex items-center justify-center w-12 h-12 mx-auto bg-green-100 rounded-full mb-4">
+                <svg class="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+            </div>
+            <h3 class="text-lg font-bold text-center text-slate-900 mb-2">Success!</h3>
+            <p class="text-center text-slate-600 mb-6 font-medium">Notes copied to clipboard successfully.</p>
+            <button onclick="closeModal()" class="w-full py-3 bg-slate-100 hover:bg-slate-200 text-slate-800 font-bold rounded-xl transition">Close</button>
+        </div>
+    </div>
+
+    <script>
+        function checkRedFlag(inputEl, min, max) {
+            const val = parseFloat(inputEl.value);
+            if (!isNaN(val) && (val < min || val > max)) {
+                inputEl.classList.remove('border-slate-200', 'bg-slate-50', 'bg-white', 'focus:ring-rose-500', 'focus:ring-teal-400', 'focus:ring-blue-400');
+                inputEl.classList.add('border-red-500', 'bg-red-50', 'text-red-700', 'font-bold', 'focus:ring-red-600');
+            } else {
+                inputEl.classList.remove('border-red-500', 'bg-red-50', 'text-red-700', 'font-bold', 'focus:ring-red-600');
+                // Restore defaults based on id prefix/parent
+                if(inputEl.id.startsWith('bp') || inputEl.id === 'hr' || inputEl.id === 'hb') {
+                    inputEl.classList.add('border-slate-200', 'bg-slate-50', 'focus:ring-rose-500');
+                } else if(inputEl.id === 'hba1c') {
+                    inputEl.classList.add('border-blue-200', 'bg-white', 'focus:ring-blue-400');
+                } else {
+                    inputEl.classList.add('border-teal-200', 'bg-white', 'focus:ring-teal-400');
+                }
+            }
+        }
+
+        function calculateAgeFromIC() {
+            const icInput = document.getElementById('patientIc').value.replace(/[^0-9]/g, '');
+            const ageInput = document.getElementById('patientAge');
+            
+            if (icInput.length >= 6) {
+                let year = parseInt(icInput.substring(0, 2));
+                const month = parseInt(icInput.substring(2, 4));
+                const day = parseInt(icInput.substring(4, 6));
+                
+                // Logic for century (assumes YY > current year last two digits means 1900s)
+                const currentYear = new Date().getFullYear();
+                const currentYear2Digits = parseInt(currentYear.toString().substring(2, 4));
+                
+                if (year > currentYear2Digits) {
+                    year += 1900;
+                } else {
+                    year += 2000;
+                }
+                
+                const dob = new Date(year, month - 1, day);
+                const today = new Date();
+                let age = today.getFullYear() - dob.getFullYear();
+                const m = today.getMonth() - dob.getMonth();
+                
+                if (m < 0 || (m === 0 && today.getDate() < dob.getDate())) {
+                    age--;
+                }
+                
+                if(!isNaN(age) && age >= 0 && age <= 120) {
+                    ageInput.value = age;
+                }
+            }
+        }
+
+        function calculateBmi() {
+            const w = parseFloat(document.getElementById('patientWeight').value);
+            const h_cm = parseFloat(document.getElementById('patientHeight').value);
+            const bmiInput = document.getElementById('patientBmi');
+            
+            if (w > 0 && h_cm > 0) {
+                const h_m = h_cm / 100;
+                const bmi = (w / (h_m * h_m)).toFixed(1);
+                bmiInput.value = bmi;
+                
+                // Color coding
+                bmiInput.className = "w-full p-2.5 border rounded-lg outline-none cursor-not-allowed font-bold text-center transition " + 
+                    (bmi < 18.5 ? "bg-blue-50 border-blue-200 text-blue-700" : 
+                    (bmi >= 18.5 && bmi <= 24.9 ? "bg-green-50 border-green-200 text-green-700" : 
+                    (bmi >= 25 && bmi <= 29.9 ? "bg-yellow-50 border-yellow-200 text-yellow-700" : 
+                    "bg-red-50 border-red-200 text-red-700")));
+            } else {
+                bmiInput.value = '';
+                bmiInput.className = "w-full p-2.5 border border-slate-200 rounded-lg bg-slate-100 text-slate-700 outline-none cursor-not-allowed font-bold text-center";
+            }
+        }
+
+        function toggleSpecialty() {
+            const isObs = document.querySelector('input[name="specialty"]:checked').value === 'obstetrics';
+            const obsBlock = document.getElementById('obsHistoryBlock');
+            const gynaeDropdowns = document.getElementById('gynaeDropdowns');
+            const obsDropdowns = document.getElementById('obsDropdowns');
+            
+            if(isObs) {
+                obsBlock.classList.remove('hidden');
+                obsDropdowns.classList.remove('hidden');
+                gynaeDropdowns.classList.add('hidden');
+            } else {
+                obsBlock.classList.add('hidden');
+                obsDropdowns.classList.add('hidden');
+                gynaeDropdowns.classList.remove('hidden');
+            }
+        }
+
+        function calculatePregnancyDates() {
+            const lmpInput = document.getElementById('obsLmp').value;
+            if(lmpInput) {
+                const lmpDate = new Date(lmpInput);
+                // Calculate EDD (+ 280 days)
+                const eddDate = new Date(lmpDate.getTime() + 280 * 24 * 60 * 60 * 1000);
+                document.getElementById('obsEdd').value = eddDate.toISOString().split('T')[0];
+                
+                // Calculate POA (Weeks + Days)
+                const today = new Date();
+                const diffTime = today - lmpDate;
+                
+                if(diffTime >= 0) {
+                    const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+                    const weeks = Math.floor(diffDays / 7);
+                    const days = diffDays % 7;
+                    document.getElementById('obsPoa').value = `${weeks}w ${days}d`;
+                } else {
+                    document.getElementById('obsPoa').value = '';
+                }
+            }
+        }
+
+        function toggleFindings(type) {
+            const checkbox = document.getElementById(`${type}Done`);
+            const optionsDiv = document.getElementById(`${type}Options`);
+            
+            if (checkbox.checked) {
+                optionsDiv.classList.remove('opacity-50', 'pointer-events-none');
+            } else {
+                optionsDiv.classList.add('opacity-50', 'pointer-events-none');
+                // Uncheck inner boxes if parent unchecked
+                const inputs = optionsDiv.querySelectorAll('input[type="checkbox"]');
+                inputs.forEach(input => input.checked = false);
+                const textInput = optionsDiv.querySelector('input[type="text"]');
+                if(textInput) textInput.value = '';
+            }
+        }
+
+        function generateClerking() {
+            // 1. Gather form data
+            const isObs = document.querySelector('input[name="specialty"]:checked').value === 'obstetrics';
+            
+            const form = {
+                name: document.getElementById('patientName').value || 'Unknown',
+                ic: document.getElementById('patientIc').value || 'N/A',
+                mrn: document.getElementById('patientMrn').value || 'N/A',
+                age: parseInt(document.getElementById('patientAge').value) || 0,
+                weight: parseFloat(document.getElementById('patientWeight').value) || 0,
+                height: parseFloat(document.getElementById('patientHeight').value) || 0,
+                bmi: parseFloat(document.getElementById('patientBmi').value) || 0,
+                
+                issues: (function() {
+                    if (isObs) {
+                        let main = document.getElementById('obsIssues').value;
+                        let other = document.getElementById('obsIssuesOther').value.trim();
+                        if (main === 'Other') return other || 'Not stated';
+                        if (main && other) return `${main} (${other})`;
+                        if (!main && other) return other;
+                        return main || 'Not stated';
+                    } else {
+                        return document.getElementById('gynaeIssues').value || 'Not stated';
+                    }
+                })(),
+                surgery: isObs ? (document.getElementById('obsSurgery').value || 'Not stated') : (document.getElementById('gynaeSurgery').value || 'Not stated'),
+                
+                obs: {
+                    isObs: isObs,
+                    gravida: document.getElementById('obsGravida').value,
+                    para: document.getElementById('obsPara').value,
+                    abortion: document.getElementById('obsAbortion').value,
+                    ectopic: document.getElementById('obsEctopic').value,
+                    lmp: document.getElementById('obsLmp').value,
+                    edd: document.getElementById('obsEdd').value,
+                    poa: document.getElementById('obsPoa').value,
+                    risks: {
+                        gdm: document.getElementById('riskGdm').checked,
+                        pih: document.getElementById('riskPih').checked,
+                        previa: document.getElementById('riskPrevia').checked,
+                        multiple: document.getElementById('riskMultiple').checked,
+                        scar: document.getElementById('riskScar').checked,
+                        others: document.getElementById('riskOthers').value.trim()
+                    }
+                },
+                
+                frailty: parseInt(document.querySelector('input[name="frailScale"]:checked').value) || 1,
+                
+                cm: {
+                    dm: document.getElementById('cmDm').checked,
+                    htn: document.getElementById('cmHtn').checked,
+                    cardiac: document.getElementById('cmCardiac').checked,
+                    renal: document.getElementById('cmRenal').checked,
+                    vte: document.getElementById('cmVte').checked,
+                    oncology: document.getElementById('cmOncology').checked,
+                    hyperT: document.getElementById('cmHyperT').checked,
+                    hypoT: document.getElementById('cmHypoT').checked,
+                    others: document.getElementById('cmOthers').value.trim()
+                },
+
+                refs: {
+                    cardio: document.getElementById('refCardio').checked,
+                    endo: document.getElementById('refEndo').checked,
+                    anaes: document.getElementById('refAnaes').checked,
+                    uro: document.getElementById('refUro').checked,
+                    colo: document.getElementById('refColo').checked
+                },
+                
+                vitals: {
+                    sys: parseInt(document.getElementById('bpSys').value) || 0,
+                    dia: parseInt(document.getElementById('bpDia').value) || 0,
+                    hr: parseInt(document.getElementById('hr').value) || 0,
+                    hb: parseFloat(document.getElementById('hb').value) || 0,
+                    hba1c: parseFloat(document.getElementById('hba1c').value) || null,
+                    glucose: document.getElementById('glucose').value.trim() || null,
+                    tsh: parseFloat(document.getElementById('tsh').value) || null,
+                    freeT4: parseFloat(document.getElementById('freeT4').value) || null,
+                    sympAnemia: document.getElementById('sympAnemia').checked,
+                    sympBleeding: document.getElementById('sympBleeding').checked,
+                },
+
+                checks: {
+                    ecg: document.getElementById('ecgDone').checked,
+                    ecgNormal: document.getElementById('ecgNormal').checked,
+                    ecgIschemia: document.getElementById('ecgIschemia').checked,
+                    ecgAf: document.getElementById('ecgAf').checked,
+                    ecgLvh: document.getElementById('ecgLvh').checked,
+                    ecgBbb: document.getElementById('ecgBbb').checked,
+                    ecgOthers: document.getElementById('ecgOthers').value.trim(),
+                    
+                    echo: document.getElementById('echoDone').checked,
+                    echoNormal: document.getElementById('echoNormal').checked,
+                    echoImpaired: document.getElementById('echoImpaired').checked,
+                    echoValvular: document.getElementById('echoValvular').checked,
+                    echoPhtn: document.getElementById('echoPhtn').checked,
+                    echoDiastolic: document.getElementById('echoDiastolic').checked,
+                    echoOthers: document.getElementById('echoOthers').value.trim(),
+                    
+                    counsel: document.getElementById('chkCounsel').checked,
+                    counselSpiro: document.getElementById('counselSpiro').checked,
+                    counselIncSpiro: document.getElementById('counselIncSpiro').checked,
+                    counselDiet: document.getElementById('counselDiet').checked,
+                    counselTed: document.getElementById('counselTed').checked,
+                    skin: document.getElementById('chkSkin').checked,
+                    marking: document.getElementById('chkMarking').checked,
+                    consent: document.getElementById('chkConsent').checked,
+                },
+
+                // Labs
+                labs: {
+                    wcc: document.getElementById('invWcc').value.trim(),
+                    plt: document.getElementById('invPlt').value.trim(),
+                    urea: document.getElementById('invUrea').value.trim(),
+                    cr: document.getElementById('invCr').value.trim(),
+                    na: document.getElementById('invNa').value.trim(),
+                    k: document.getElementById('invK').value.trim(),
+                    pt: document.getElementById('invPt').value.trim(),
+                    aptt: document.getElementById('invAptt').value.trim(),
+                    inr: document.getElementById('invInr').value.trim(),
+                    ast: document.getElementById('invAst').value.trim(),
+                    alt: document.getElementById('invAlt').value.trim(),
+                    bili: document.getElementById('invBili').value.trim(),
+                    alb: document.getElementById('invAlbumin').value.trim(),
+                    others: document.getElementById('invOthers').value.trim()
+                },
+
+                // Cardiopulmonary Assessment (ACC/AHA)
+                cardioACC: {
+                    unstableAngina: document.getElementById('cardioUnstableAngina').checked,
+                    decompHF: document.getElementById('cardioDecompHF').checked,
+                    arrhythmia: document.getElementById('cardioArrhythmia').checked,
+                    severeValve: document.getElementById('cardioSevereValve').checked,
+                    
+                    rcriIHD: document.getElementById('rcriIHD').checked,
+                    rcriCHF: document.getElementById('rcriCHF').checked,
+                    rcriCVD: document.getElementById('rcriCVD').checked,
+                    rcriIDDM: document.getElementById('rcriIDDM').checked,
+                    rcriRenal: document.getElementById('rcriRenal').checked,
+                    
+                    metsPoor: document.querySelector('input[name="mets"]:checked').value === 'poor',
+                    modPulmHTN: document.getElementById('modPulmHTN').checked,
+                    modBiomarkers: document.getElementById('modBiomarkers').checked
+                }
+            };
+
+            // Process Comorbidities
+            let cmList = [];
+            if(form.cm.dm) cmList.push("DM");
+            if(form.cm.htn) cmList.push("HTN");
+            if(form.cm.cardiac) cmList.push("Cardiac Disease");
+            if(form.cm.renal) cmList.push("Renal Impairment");
+            if(form.cm.vte) cmList.push("Prev VTE/Hypercoagulable");
+            if(form.cm.oncology) cmList.push("Active Malignancy");
+            if(form.cm.hyperT) cmList.push("Hyperthyroidism");
+            if(form.cm.hypoT) cmList.push("Hypothyroidism");
+            if(form.cm.others) cmList.push(form.cm.others);
+            const cmString = cmList.length > 0 ? cmList.join(", ") : "Nil significant";
+
+            // Process Referrals
+            let refList = [];
+            if(form.refs.cardio) refList.push("Cardiology");
+            if(form.refs.endo) refList.push("Endocrinology");
+            if(form.refs.anaes) refList.push("Anaesthesiology");
+            if(form.refs.uro) refList.push("Urology");
+            if(form.refs.colo) refList.push("Colorectal");
+            const refString = refList.length > 0 ? refList.join(", ") : "None required";
+
+            // Process Investigations
+            let cardioString = "";
+            if(form.checks.ecg) {
+                let ecgArr = [];
+                if(form.checks.ecgNormal) ecgArr.push("Normal Sinus Rhythm");
+                if(form.checks.ecgIschemia) ecgArr.push("Ischemia/Infarct");
+                if(form.checks.ecgAf) ecgArr.push("AF/Arrhythmia");
+                if(form.checks.ecgLvh) ecgArr.push("LVH");
+                if(form.checks.ecgBbb) ecgArr.push("Bundle Branch Block");
+                if(form.checks.ecgOthers) ecgArr.push(form.checks.ecgOthers);
+                cardioString += `ECG Done: ${ecgArr.length > 0 ? ecgArr.join(", ") : "Findings not stated"}\n`;
+            } else {
+                 cardioString += `ECG: Not done / Pending\n`;
+            }
+            if(form.checks.echo) {
+                let echoArr = [];
+                if(form.checks.echoNormal) echoArr.push("Normal LVEF >50%");
+                if(form.checks.echoImpaired) echoArr.push("Impaired LVEF <50%");
+                if(form.checks.echoValvular) echoArr.push("Mod/Sev Valvulopathy");
+                if(form.checks.echoPhtn) echoArr.push("Pulmonary HTN");
+                if(form.checks.echoDiastolic) echoArr.push("Diastolic Dysfunction");
+                if(form.checks.echoOthers) echoArr.push(form.checks.echoOthers);
+                cardioString += `ECHO Done: ${echoArr.length > 0 ? echoArr.join(", ") : "Findings not stated"}`;
+            } else {
+                 cardioString += `ECHO: Not done / Pending`;
+            }
+
+            // Process Laboratory Investigations
+            let labString = "";
+            labString += `FBC   : WCC ${form.labs.wcc || '-'} x10^9/L | Plt ${form.labs.plt || '-'} x10^9/L\n`;
+            labString += `Renal : Urea ${form.labs.urea || '-'} mmol/L | Cr ${form.labs.cr || '-'} µmol/L | Na ${form.labs.na || '-'} | K ${form.labs.k || '-'}\n`;
+            labString += `Liver : Bili ${form.labs.bili || '-'} µmol/L | AST ${form.labs.ast || '-'} U/L | ALT ${form.labs.alt || '-'} U/L | Alb ${form.labs.alb || '-'} g/L\n`;
+            labString += `Coag  : PT ${form.labs.pt || '-'}s | APTT ${form.labs.aptt || '-'}s | INR ${form.labs.inr || '-'}\n`;
+            if (form.labs.others) labString += `\nAdditional: ${form.labs.others}\n`;
+
+            // 2. Initialize Output Sections
+            let clinicalAlerts = [];
+            let decisionSupport = [];
+            
+            // --- VITAL & CLINICAL FLAG LOGIC ---
+            if (form.vitals.sys > 0 && form.vitals.sys < 90) clinicalAlerts.push("🚩 HYPOTENSION: Systolic < 90. Rule out hypovolemia/shock prior to induction.");
+            if (form.vitals.sys > 160 || form.vitals.dia > 100) clinicalAlerts.push(`🚩 HYPERTENSION: BP ${form.vitals.sys}/${form.vitals.dia}. Optimize BP control prior to elective surgery.`);
+            if (form.vitals.hr > 100) clinicalAlerts.push("🚩 TACHYCARDIA: HR > 100. Assess for dehydration, pain, bleeding, or thyrotoxicosis.");
+            if (form.vitals.hb > 0 && form.vitals.hb < 10.0) clinicalAlerts.push(`🚩 ANEMIA: Hb ${form.vitals.hb} g/dL. Optimize pre-op (iron/transfusion).`);
+            if (form.vitals.sympAnemia || form.vitals.sympBleeding) clinicalAlerts.push("🚩 SYMPTOMATIC/BLEEDING: Active management required. Ensure GXM packed cells ready.");
+            
+            // Thyroid alerts
+            if (form.vitals.tsh !== null) {
+                if (form.vitals.tsh < 0.4) clinicalAlerts.push(`🚩 THYROID RISK (Hyper): Low TSH (${form.vitals.tsh}). Risk of thyroid storm. Ensure Endocrinology review.`);
+                if (form.vitals.tsh > 4.5) clinicalAlerts.push(`🚩 THYROID RISK (Hypo): High TSH (${form.vitals.tsh}). Risk of delayed extubation/myxedema coma. Ensure Endocrinology review.`);
+            }
+
+            // --- ACC/AHA CARDIOLOGY ASSESSMENT LOGIC ---
+            let accAhaAlerts = [];
+            
+            // Step 1
+            if (form.cardioACC.unstableAngina || form.cardioACC.decompHF || form.cardioACC.arrhythmia || form.cardioACC.severeValve) {
+                accAhaAlerts.push("🚩 CRITICAL (Step 1): Active/unstable cardiac condition present. Elective surgery MUST BE DEFERRED. Urgent Cardiology consult required.");
+                clinicalAlerts.push("🚩 CRITICAL CARDIAC: Unstable condition. Defer elective surgery.");
+            } else {
+                accAhaAlerts.push("🔹 Step 1: No active/unstable cardiac conditions.");
+            }
+
+            // Step 2 & 3: RCRI & Surgical Risk
+            let rcriScore = 0;
+            if (form.cardioACC.rcriIHD) rcriScore++;
+            if (form.cardioACC.rcriCHF) rcriScore++;
+            if (form.cardioACC.rcriCVD) rcriScore++;
+            if (form.cardioACC.rcriIDDM) rcriScore++;
+            if (form.cardioACC.rcriRenal) rcriScore++;
+            
+            let highRiskSurg = false;
+            // Define high risk surgery based on O&G inputs (Major/Exenteration)
+            if (form.surgery.includes("Exenteration") || form.surgery.includes("Oncology") || form.surgery.includes("Laparotomy") || form.surgery.includes("Major")) {
+                rcriScore++;
+                highRiskSurg = true;
+            }
+            
+            if (rcriScore >= 2) {
+                accAhaAlerts.push(`🚩 HIGH CV RISK (Step 2/3): RCRI Score is ${rcriScore} (≥ 1% 30-day MACE risk). High cardiovascular risk profile.`);
+            } else {
+                accAhaAlerts.push(`🔹 CV RISK (Step 2/3): RCRI Score is ${rcriScore} (Low clinical risk profile).`);
+            }
+
+            // Step 4: METs
+            if (form.cardioACC.metsPoor) {
+                accAhaAlerts.push("🚩 POOR CAPACITY (Step 4): < 4 METs. Patient is at high risk for GA complications.");
+                clinicalAlerts.push("🚩 POOR FUNCTIONAL CAPACITY: High risk for General Anesthesia.");
+            } else {
+                accAhaAlerts.push("🔹 CAPACITY (Step 4): Good (≥ 4 METs).");
+            }
+
+            // Risk Modifiers
+            let modifiers = [];
+            if (form.cardioACC.modPulmHTN) modifiers.push("Severe Pulm HTN");
+            if (form.cardioACC.modBiomarkers) modifiers.push("Elevated Biomarkers");
+            if (form.frailty >= 6) modifiers.push("Clinical Frailty");
+            
+            if (modifiers.length > 0) {
+                accAhaAlerts.push(`🚩 RISK MODIFIERS PRESENT: [${modifiers.join(", ")}]. Hard pause required. Multidisciplinary discussion (Anaesthesia/Cardio/Surg) mandatory before proceeding.`);
+            }
+
+
+            // --- ERAS DECISION SUPPORT AI ENGINE ---
+            decisionSupport.push("=== AI DECISION SUPPORT & ERAS STRATEGY ===");
+            decisionSupport.push("References: ERAS Society Guidelines (2019), FEBRASGO Position Statement (2022), Safe Surgery Saves Lives KKM (2018)");
+            
+            // 1. Multidisciplinary & General Risk
+            if (form.surgery.includes("Exenteration") || form.surgery.includes("Oncology") || form.surgery.includes("TABHSO") || form.issues.includes("Malignancy") || form.issues.includes("Endometriosis")) {
+                let multiStr = "🔹 MULTIDISCIPLINARY: Major/Complex surgery.";
+                if(!form.refs.uro) multiStr += " Consider Urology standby (ureteric stenting/injury risk).";
+                if(!form.refs.colo && (form.issues.includes("Oncology") || form.issues.includes("Endometriosis"))) multiStr += " Consider Colorectal standby (bowel involvement risk).";
+                decisionSupport.push(multiStr);
+            }
+            
+            // 2. Geriatric & Frailty Assessment
+            if (form.age >= 65 || form.frailty >= 4 || form.cm.cardiac) {
+                let riskStr = `🔹 GERIATRIC/CARDIAC RISK: High risk for GA (Age ${form.age}, Frailty Scale ${form.frailty}).`;
+                if (!form.checks.ecg || !form.checks.echo) {
+                    riskStr += "\n   ➔ ACTION REQUIRED: Mandatory 12-lead ECG and Echocardiography assessment before anesthesia clearance.";
+                } else if (form.checks.ecgIschemia || form.checks.ecgAf || form.checks.echoImpaired || form.checks.echoValvular) {
+                     riskStr += "\n   ➔ ALERT: Abnormal Cardio findings noted. Formal Cardiology clearance MANDATORY before surgery.";
+                } else {
+                    riskStr += "\n   ➔ ECG/ECHO completed. Anesthesiology expert opinion required for final clearance.";
+                }
+                decisionSupport.push(riskStr);
+            } else {
+                decisionSupport.push(`🔹 RISK STRATIFICATION: Low/Mod risk for GA. Proceed with standard anesthesia review (Age ${form.age}, Frailty ${form.frailty}).`);
+            }
+
+            // 3. Fasting Strategy
+            decisionSupport.push("🔹 FASTING: Solid food allowed up to 6 hours pre-op. Clear liquids up to 2 hours pre-op. Administer oral carbohydrate drinks 2-3 hours prior to induction (unless delayed gastric emptying).");
+
+            // 4. Mode of Anesthesia & Analgesia
+            decisionSupport.push("🔹 ANESTHESIA & ANALGESIA: Short-acting anesthetics (continuous Propofol) & goal-directed fluid therapy. Implement opioid-sparing multimodal analgesia (NSAIDs, Acetaminophen, Gabapentin) + Incisional infiltration over TAP blocks.");
+
+            // 5. VTE Prophylaxis Strategy
+            if (form.cm.oncology || form.issues.includes("Malignancy") || form.cm.vte || form.surgery.includes("Major")) {
+                let vteRec = "🔹 VTE PROPHYLAXIS: High Risk. Dual-modality required (Mechanical pneumatic compression + Pharmacological LMWH).";
+                if (form.cm.oncology || form.issues.includes("Malignancy")) {
+                    vteRec += "\n   ➔ EXTENDED: Oncology patient requires extended 28-day chemoprophylaxis post-discharge.";
+                }
+                decisionSupport.push(vteRec);
+            } else {
+                decisionSupport.push("🔹 VTE PROPHYLAXIS: Standard mechanical compression. Assess chemical prophylaxis need individually.");
+            }
+
+            // 6. Surgical Site Infection (SSI) Bundle & Diabetes
+            let ssiStr = "🔹 SSI & GLYCEMIC BUNDLE:\n";
+            ssiStr += form.checks.skin ? "   [✓] Chlorhexidine skin prep addressed.\n" : "   [ ] ACTION: Perform Chlorhexidine shower/skin prep.\n";
+            ssiStr += "   ➔ ANTIBIOTICS: 1st-Gen Cephalosporin within 1h of incision (weight-based dosing). Add anaerobic coverage if bowel entry expected.\n";
+            ssiStr += "   ➔ NORMOTHERMIA: Use forced air blankets / warmed IV fluids.\n";
+            
+            if (form.cm.dm || form.vitals.hba1c || form.vitals.glucose) {
+                let a1cStr = form.vitals.hba1c ? `(HbA1c: ${form.vitals.hba1c}%)` : '';
+                let gluStr = form.vitals.glucose ? `(Glucose Trend: ${form.vitals.glucose})` : '';
+                ssiStr += `   ➔ GLYCEMIC CONTROL: Dysglycemia risk ${a1cStr} ${gluStr}. Maintain strict perioperative blood glucose < 11.1 mmol/L (<200 mg/dL).`;
+            } else {
+                ssiStr = ssiStr.trim();
+            }
+            decisionSupport.push(ssiStr);
+
+            // 7. Safe Surgery Checklist (Pre-op)
+            decisionSupport.push("\n=== SAFE SURGERY SAVES LIVES (PRE-OP CHECKS) ===");
+            let safeSurg = "";
+            safeSurg += form.checks.consent ? "[✓] Informed Consent Signed & Verified (2 Identifiers)\n" : "[ ] ALERT: Consent NOT VERIFIED. Ensure signed before OT.\n";
+            safeSurg += form.checks.marking ? "[✓] Surgical Site Marked\n" : "[ ] ACTION: Ensure Site Marking done by operating surgeon (if applicable).\n";
+            
+            if(form.checks.counsel) {
+                let counselArr = [];
+                if(form.checks.counselSpiro) counselArr.push("Spirometry");
+                if(form.checks.counselIncSpiro) counselArr.push("Incentive Spirometry");
+                if(form.checks.counselDiet) counselArr.push("Dietitian");
+                if(form.checks.counselTed) counselArr.push("TED Stockings");
+                let extra = counselArr.length > 0 ? ` (Included: ${counselArr.join(', ')})` : "";
+                safeSurg += `[✓] Pre-op Counseling Done${extra}\n`;
+            } else {
+                safeSurg += "[ ] ACTION: Conduct pre-op counseling (expectations, pain management, DVT prevention).\n";
+            }
+            
+            decisionSupport.push(safeSurg.trim());
+
+            // --- SAVE TO LOCALSTORAGE FOR DASHBOARD ---
+            saveCaseData(form, highRiskSurg, rcriScore);
+
+            // --- BUILD FINAL TEXT ---
+            const d = new Date();
+            const dateStr = d.toLocaleDateString() + " " + d.toLocaleTimeString();
+
+            // Construct Profile Section dynamically based on Obstetrics or Gynecology
+            let profileSection = "";
+            if (form.obs.isObs) {
+                let riskList = [];
+                if(form.obs.risks.gdm) riskList.push("GDM");
+                if(form.obs.risks.pih) riskList.push("PIH/PE");
+                if(form.obs.risks.previa) riskList.push("Placenta Previa");
+                if(form.obs.risks.multiple) riskList.push("Multiple Gestation");
+                if(form.obs.risks.scar) riskList.push("Previous Scar");
+                if(form.obs.risks.others) riskList.push(form.obs.risks.others);
+                const risksStr = riskList.length > 0 ? riskList.join(", ") : "Nil";
+
+                profileSection = `[ OBSTETRIC & SURGICAL PROFILE ]
+Obstetric Hx    : G${form.obs.gravida || '-'} P${form.obs.para || '-'} A${form.obs.abortion || '-'} E${form.obs.ectopic || '-'}
+Dates           : LMP ${form.obs.lmp || '-'} | EDD ${form.obs.edd || '-'} | POA ${form.obs.poa || '-'}
+Antenatal Risks : ${risksStr}
+Active Issue    : ${form.issues}
+Planned Surgery : ${form.surgery}
+Comorbidities   : ${cmString}
+Frailty Scale   : ${form.frailty}
+Multi-D Referrals: ${refString}`;
+            } else {
+                profileSection = `[ GYNECOLOGY & SURGICAL PROFILE ]
+Active Issue    : ${form.issues}
+Planned Surgery : ${form.surgery}
+Comorbidities   : ${cmString}
+Frailty Scale   : ${form.frailty}
+Multi-D Referrals: ${refString}`;
+            }
+
+            const finalNotes = 
+`==============================================
+O&G PERI-OPERATIVE ERAS ASSESSMENT
+Date/Time: ${dateStr}
+==============================================
+
+[ PATIENT DEMOGRAPHICS ]
+Name            : ${form.name}
+IC / Passport   : ${form.ic}
+MRN             : ${form.mrn}
+Age / Anthro    : ${form.age} yrs | ${form.weight} kg | ${form.height} cm (BMI: ${form.bmi})
+
+${profileSection}
+
+[ VITALS & EXPANDED STATUS ]
+Blood Pressure  : ${form.vitals.sys}/${form.vitals.dia} mmHg
+Heart Rate      : ${form.vitals.hr} bpm
+Hemoglobin (Hb) : ${form.vitals.hb} g/dL
+Anemic Symptoms : ${form.vitals.sympAnemia ? 'Yes' : 'No'}
+Bleeding Risk   : ${form.vitals.sympBleeding ? 'High' : 'Standard'}
+Thyroid Profile : TSH: ${form.vitals.tsh || 'N/A'} mIU/L | Free T4: ${form.vitals.freeT4 || 'N/A'} pmol/L
+
+[ CARDIOPULMONARY STATUS (Basic) ]
+${cardioString}
+
+[ LABORATORY & ADDITIONAL INVESTIGATIONS ]
+${labString.trim()}
+
+[ CV RISK ASSESSMENT (ACC/AHA GUIDELINE) ]
+${accAhaAlerts.join('\n')}
+
+[ CLINICAL ALERTS ]
+${clinicalAlerts.length > 0 ? clinicalAlerts.join('\n') : 'No immediate vital/blood abnormalities flagged.'}
+
+${decisionSupport.join('\n\n')}
+`;
+
+            document.getElementById('outputNotes').value = finalNotes;
+        }
+
+        function downloadTxt() {
+            generateClerking();
+            const text = document.getElementById("outputNotes").value;
+            if (!text.trim()) {
+                return;
+            }
+            const blob = new Blob([text], { type: "text/plain" });
+            const anchor = document.createElement("a");
+            anchor.download = "ERAS_PreOp_Assessment.txt";
+            anchor.href = window.URL.createObjectURL(blob);
+            anchor.click();
+        }
+
+        // --- DASHBOARD & NAVIGATION LOGIC ---
+        
+        let chartInstances = {};
+
+        function toggleFullscreen() {
+            if (!document.fullscreenElement) {
+                document.documentElement.requestFullscreen().catch(err => {
+                    console.log(`Error attempting to enable fullscreen: ${err.message}`);
+                });
+            } else {
+                if (document.exitFullscreen) {
+                    document.exitFullscreen();
+                }
+            }
+        }
+
+        function switchView(viewId) {
+            const clerkingView = document.getElementById('clerkingView');
+            const dashboardView = document.getElementById('dashboardView');
+            const navClerking = document.getElementById('navClerking');
+            const navDashboard = document.getElementById('navDashboard');
+
+            if(viewId === 'dashboard') {
+                clerkingView.classList.add('hidden');
+                dashboardView.classList.remove('hidden');
+                navDashboard.classList.replace('text-slate-500', 'text-blue-700');
+                navDashboard.classList.replace('hover:text-slate-800', 'bg-white');
+                navDashboard.classList.add('shadow-sm');
+                navClerking.classList.replace('text-blue-700', 'text-slate-500');
+                navClerking.classList.replace('bg-white', 'hover:text-slate-800');
+                navClerking.classList.remove('shadow-sm');
+                
+                loadDashboardData();
+            } else {
+                dashboardView.classList.add('hidden');
+                clerkingView.classList.remove('hidden');
+                navClerking.classList.replace('text-slate-500', 'text-blue-700');
+                navClerking.classList.replace('hover:text-slate-800', 'bg-white');
+                navClerking.classList.add('shadow-sm');
+                navDashboard.classList.replace('text-blue-700', 'text-slate-500');
+                navDashboard.classList.replace('bg-white', 'hover:text-slate-800');
+                navDashboard.classList.remove('shadow-sm');
+            }
+        }
+
+        function startNewCase() {
+            document.getElementById('assessmentForm').reset();
+            document.getElementById('patientBmi').value = '';
+            document.getElementById('patientBmi').className = "w-full p-2.5 border border-slate-200 rounded-lg bg-slate-100 text-slate-700 outline-none cursor-not-allowed font-bold text-center";
+            document.getElementById('outputNotes').value = '';
+            
+            // Reset dynamic fields
+            toggleFindings('ecg');
+            toggleFindings('echo');
+            
+            // Switch back to form view
+            switchView('clerking');
+        }
+
+        function saveCaseData(form, highRiskSurg, rcriScore) {
+            // Determine Specialty based on explicit selection
+            let specialty = form.obs && form.obs.isObs ? 'Obstetrics' : 'Gynecology';
+
+            // Determine Oncology
+            const isOncology = form.surgery.includes('Oncology') || form.issues.includes('Malignancy') || form.cm.oncology;
+
+            const newCase = {
+                id: Date.now(),
+                date: new Date().toLocaleDateString(),
+                name: form.name,
+                ic: form.ic,
+                age: form.age,
+                bmi: form.bmi,
+                surgery: form.surgery,
+                specialty: specialty,
+                frailty: form.frailty,
+                isOncology: isOncology,
+                highCVRisk: (rcriScore >= 2 || form.cardioACC.unstableAngina || form.cardioACC.decompHF || form.cardioACC.arrhythmia || form.cardioACC.severeValve || form.cardioACC.metsPoor)
+            };
+
+            let cases = JSON.parse(localStorage.getItem('eras_cases') || '[]');
+            
+            // Prevent duplicate saves on same form edit (simple check based on IC and Name within 5 seconds)
+            const recentDuplicate = cases.find(c => c.ic === form.ic && c.name === form.name && (Date.now() - c.id < 5000));
+            if (!recentDuplicate) {
+                cases.unshift(newCase); // add to top
+                localStorage.setItem('eras_cases', JSON.stringify(cases));
+                
+                // Send data to Google Sheets
+                sendToGoogleSheets(newCase);
+            }
+        }
+
+        // Google Sheets Integration
+        function sendToGoogleSheets(caseData) {
+            // Live Google Apps Script Web App URL
+            const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxsEA_kSS2QHcJfwbsq5vVOsKTFMNFdrSjZji43ogIAsZa3TdwF7D2QCoGvrsAFJYyLcw/exec"; 
+
+            if (GOOGLE_SCRIPT_URL === "YOUR_GOOGLE_SCRIPT_URL_HERE") {
+                console.log("Google Sheets URL not configured yet. Only saving locally.");
+                return;
+            }
+
+            fetch(GOOGLE_SCRIPT_URL, {
+                method: 'POST',
+                mode: 'no-cors', // Bypasses CORS restrictions in the browser
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(caseData)
+            }).then(() => {
+                console.log("Successfully sent to Google Sheets!");
+            }).catch(error => {
+                console.error("Error sending to Google Sheets:", error);
+            });
+        }
+
+        function loadDashboardData() {
+            const cases = JSON.parse(localStorage.getItem('eras_cases') || '[]');
+            
+            // Calculate Stats
+            const total = cases.length;
+            let obsCount = 0;
+            let gynaeCount = 0;
+            let highRiskCount = 0;
+            let oncologyCount = 0;
+            let frailCount = 0;
+            let totalAge = 0;
+            
+            let frailtyCounts = { 1: 0, 2: 0, 4: 0, 6: 0 };
+            let surgeryTypesMap = {};
+
+            cases.forEach(c => {
+                if(c.specialty === 'Obstetrics') obsCount++;
+                else gynaeCount++;
+                
+                if(c.highCVRisk) highRiskCount++;
+                if(c.isOncology) oncologyCount++;
+                if(c.frailty >= 4) frailCount++;
+                if(c.age) totalAge += parseInt(c.age);
+                
+                // Track Frailty
+                let fKey = c.frailty;
+                if(fKey >= 6) fKey = 6;
+                else if (fKey >= 4) fKey = 4;
+                else if (fKey >= 2) fKey = 2;
+                else fKey = 1;
+                frailtyCounts[fKey] = (frailtyCounts[fKey] || 0) + 1;
+
+                // Group Surgery Types for chart
+                let sType = "Other";
+                if(c.surgery.includes('Laparoscopic')) sType = "Laparoscopy";
+                else if(c.surgery.includes('Laparotomy') || c.surgery.includes('TABHSO')) sType = "Laparotomy (Open)";
+                else if(c.surgery.includes('Caesarean') || c.surgery.includes('LSCS')) sType = "Caesarean / LSCS";
+                else if(c.surgery.includes('Minor') || c.surgery.includes('Hysteroscopy')) sType = "Minor / Scope";
+                else if(c.surgery.includes('Oncology') || c.surgery.includes('Exenteration')) sType = "Complex Oncology";
+                
+                surgeryTypesMap[sType] = (surgeryTypesMap[sType] || 0) + 1;
+            });
+
+            // Update DOM Cards
+            document.getElementById('dashTotalCases').innerText = total;
+            document.getElementById('dashObs').innerText = obsCount;
+            document.getElementById('dashGynae').innerText = gynaeCount;
+            document.getElementById('dashAvgAge').innerText = total > 0 ? Math.round(totalAge / total) : '0';
+            document.getElementById('dashHighRisk').innerText = total > 0 ? Math.round((highRiskCount / total) * 100) + '%' : '0%';
+            document.getElementById('dashOncology').innerText = total > 0 ? Math.round((oncologyCount / total) * 100) + '%' : '0%';
+            document.getElementById('dashFrail').innerText = total > 0 ? Math.round((frailCount / total) * 100) + '%' : '0%';
+
+            // Populate Table
+            const tbody = document.getElementById('caseTableBody');
+            tbody.innerHTML = '';
+            cases.slice(0, 15).forEach(c => { // Show last 15
+                const tr = document.createElement('tr');
+                tr.className = "hover:bg-slate-50 transition border-b border-slate-100";
+                tr.innerHTML = `
+                    <td class="px-6 py-3 font-mono text-slate-500">${c.date}</td>
+                    <td class="px-6 py-3 font-bold text-slate-800">${c.name || 'Unknown'} <br><span class="text-xs font-normal text-slate-500">${c.ic}</span></td>
+                    <td class="px-6 py-3 text-slate-600">${c.age || '-'} yrs <br><span class="text-xs text-slate-400">BMI: ${c.bmi || '-'}</span></td>
+                    <td class="px-6 py-3"><span class="px-2 py-1 rounded-full text-[10px] font-bold ${c.specialty === 'Obstetrics' ? 'bg-indigo-100 text-indigo-700' : 'bg-rose-100 text-rose-700'}">${c.specialty}</span></td>
+                    <td class="px-6 py-3 text-slate-600 max-w-[200px] truncate" title="${c.surgery}">${c.surgery || 'N/A'}</td>
+                    <td class="px-6 py-3">${c.highCVRisk ? '<span class="px-2 py-1 rounded text-[10px] font-bold bg-red-100 text-red-700 border border-red-200">High Risk</span>' : '<span class="px-2 py-1 rounded text-[10px] font-bold bg-emerald-100 text-emerald-700 border border-emerald-200">Low Risk</span>'}</td>
+                `;
+                tbody.appendChild(tr);
+            });
+            if(total === 0) {
+                tbody.innerHTML = `<tr><td colspan="6" class="px-6 py-8 text-center text-slate-400 font-medium">No cases registered yet. Fill out the form and generate clerking to see data here.</td></tr>`;
+            }
+
+            // Render Charts after a tiny delay to ensure the DOM is visible (fixes blank canvas issue)
+            setTimeout(() => {
+                renderCharts(obsCount, gynaeCount, frailtyCounts, surgeryTypesMap);
+            }, 100);
+        }
+
+        function renderCharts(obsCount, gynaeCount, frailtyCounts, surgeryTypesMap) {
+            // Destroy existing charts to prevent hover glitching
+            if(chartInstances.specialty) chartInstances.specialty.destroy();
+            if(chartInstances.frailty) chartInstances.frailty.destroy();
+            if(chartInstances.surgeryType) chartInstances.surgeryType.destroy();
+
+            // 1. Pie Chart (Specialty)
+            const ctxSpec = document.getElementById('specialtyChart').getContext('2d');
+            chartInstances.specialty = new Chart(ctxSpec, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Obstetrics', 'Gynecology'],
+                    datasets: [{
+                        data: [obsCount, gynaeCount],
+                        backgroundColor: ['#4f46e5', '#e11d48'], // Indigo and Rose
+                        borderWidth: 0,
+                        hoverOffset: 4
+                    }]
+                },
+                options: { responsive: true, maintainAspectRatio: false, cutout: '70%', plugins: { legend: { position: 'bottom', labels: { boxWidth: 12 } } } }
+            });
+
+            // 2. Bar Chart (Frailty)
+            const ctxFrailty = document.getElementById('frailtyChart').getContext('2d');
+            chartInstances.frailty = new Chart(ctxFrailty, {
+                type: 'bar',
+                data: {
+                    labels: ['1 (Fit)', '2-3 (Well)', '4-5 (Vulnerable)', '6+ (Frail)'],
+                    datasets: [{
+                        label: 'Patients',
+                        data: [frailtyCounts[1], frailtyCounts[2], frailtyCounts[4], frailtyCounts[6]],
+                        backgroundColor: ['#3b82f6', '#3b82f6', '#f59e0b', '#ef4444'], // Color code risk
+                        borderRadius: 6
+                    }]
+                },
+                options: { 
+                    responsive: true, 
+                    maintainAspectRatio: false, 
+                    plugins: { legend: { display: false } },
+                    scales: { y: { beginAtZero: true, ticks: { stepSize: 1 } }, x: { grid: { display: false }, ticks: { font: { size: 10 } } } }
+                }
+            });
+
+            // 3. Doughnut Chart (Surgery Types)
+            const ctxSurg = document.getElementById('surgeryTypeChart').getContext('2d');
+            const surgLabels = Object.keys(surgeryTypesMap);
+            const surgData = Object.values(surgeryTypesMap);
+            chartInstances.surgeryType = new Chart(ctxSurg, {
+                type: 'pie',
+                data: {
+                    labels: surgLabels,
+                    datasets: [{
+                        data: surgData,
+                        backgroundColor: ['#0ea5e9', '#8b5cf6', '#10b981', '#f59e0b', '#f43f5e'],
+                        borderWidth: 0
+                    }]
+                },
+                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'right', labels: { boxWidth: 10, font: { size: 10 } } } } }
+            });
+        }
+
+        function clearAllData() {
+            if(confirm("Are you sure you want to delete all registered cases? This cannot be undone.")) {
+                localStorage.removeItem('eras_cases');
+                loadDashboardData();
+            }
+        }
+
+        function copyNotes() {
+            const copyText = document.getElementById("outputNotes");
+            if (!copyText.value.trim()) return;
+
+            copyText.select();
+            copyText.setSelectionRange(0, 99999);
+
+            try {
+                document.execCommand('copy');
+                showModal();
+            } catch (err) {
+                console.error('Failed to copy', err);
+            }
+        }
+
+        function showModal() {
+            const modal = document.getElementById('customModal');
+            const content = document.getElementById('modalContent');
+            modal.classList.remove('hidden');
+            void modal.offsetWidth;
+            modal.classList.remove('opacity-0');
+            content.classList.remove('scale-95');
+        }
+
+        function closeModal() {
+            const modal = document.getElementById('customModal');
+            const content = document.getElementById('modalContent');
+            modal.classList.add('opacity-0');
+            content.classList.add('scale-95');
+            setTimeout(() => {
+                modal.classList.add('hidden');
+            }, 300);
+        }
+    </script>
+</body>
+</html>
